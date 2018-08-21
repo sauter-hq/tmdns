@@ -593,15 +593,15 @@ int udp_packet_read(int sockfd, struct udp_packet *udp_pkt )
 
     for(ifnow = interfaces; ifnow; ifnow = ifnow->ifa_next) {
 
-      if( ! (ifnow->ifa_flags & IFF_UP) ) {
+      if( ! (ifnow->ifa_flags & IFF_UP) || ifnow->ifa_addr == NULL ) {
 	  /* interface not up */
 	  continue;
       }
 
+
       debug("  loop check for %s/%s\n" ,
 		      		ifnow->ifa_name ,
 		  	        udp_sockaddr_str(ifnow->ifa_addr)); 
-
       switch( ifnow->ifa_addr->sa_family ) {
         case AF_INET:
 	  {
