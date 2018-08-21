@@ -329,8 +329,7 @@ int udp_open_sockets(int * sockets[]) {
 
 	            seen = ifnow->ifa_name;
 
-                    mreq.imr_address.s_addr = 
-                           ((struct sockaddr_in *)ifnow->ifa_addr)->sin_addr.s_addr;
+                    mreq.imr_address.s_addr = ((struct sockaddr_in *)ifnow->ifa_addr)->sin_addr.s_addr;
 		    mreq.imr_ifindex = if_nametoindex(ifnow->ifa_name);
                     inet_aton( MCAST_V4_ADDR , &(mreq.imr_multiaddr) );
 
@@ -354,6 +353,11 @@ int udp_open_sockets(int * sockets[]) {
 		            syslog(LOG_ERR, "add membership failed on interface %s: %s\n" ,
 			           ifnow->ifa_name , debug_errmsg(errno) );
 		        }
+
+			/* Set IF for mcasts */
+			if( setsockopt(listen_sockets[sockidx], IPPROTO_IP, IP_MULTICAST_IF, &mreq.imr_address, sizeof(mreq.imr_address)) < 0) {
+				log_perror("when setting IP_MULTICAST_IF");
+			}
 
 			mcastidx ++;
 	    	        sockidx ++;

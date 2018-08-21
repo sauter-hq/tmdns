@@ -59,6 +59,7 @@ static struct config config_defaults = {
 		  },
 
   dynamic_service_file:   DYNAMIC_SERVICE_FILE_DEFAULT, 
+  vlans_file:	  VLANS_FILE_DEFAULT,
 };
 
 static void conf_cmdparse(const char *cmd, const char *arg1);
@@ -273,6 +274,16 @@ static config_param config_params[] = {
      copy_interfaces,
      print_string_array
    } ,
+  {
+     "vlans_file",
+     "# File defines the Names of the vlans\n"
+     "# \n" ,
+     config.vlans_file,
+     config_defaults.vlans_file,
+     copy_string ,
+     copy_string ,
+     print_string
+  } ,
  
   /*
    * end-of-array indicator, must be present and everything below

@@ -617,13 +617,75 @@ static dns_rr * newTxtRec( const char * domain )
     return txtRec;
 }
 
+#define LINE_LEN 1024
+static void info_read_vlans( char * vlans_file){
+
+    FILE *fp;
+    int  lineno = 0;
+    char line[LINE_LEN], *cmd = NULL, *arg1 = NULL;
+    struct in_addr inaddr;
+    vlans_t *vl,*lvl;
+
+    debug("read vlan configuration %s ...\n", vlans_file);
+
+    vlans = vl = lvl = NULL;
+    fp = fopen (vlans_file, "r");
+    if (!fp) {
+      debug_perror("no vlans file");
+      return;
+    }
+
+    while (fgets(line, 1024 , fp)) {
+	 if (!(line[0]=='#')) {	/* skip lines with comment */
+		size_t idx = 0;
+		char * tmp = 0;
+
+		line[strlen(line) - 1] = 0; /* kill '\n' */
+		cmd = strtok( line, "=" );
+		arg1 = strtok( NULL, "=");
+
+		if(arg1 == NULL) continue;
+		/* remove trailing whitespace from cmd */
+		for( tmp = arg1 - 1; tmp > line; tmp -- ) {
+		    if( (*tmp == ' ')  || ( *tmp == '\t' ) ) {
+			*tmp = 0;
+		    }
+		}
+		/* remove leading whitespaces */
+		while( (*arg1 == ' ') || (*arg1 == '\t' ) )
+		    arg1 ++;
+		/* remove trailing whitespaces */
+		for(idx = strlen(arg1) - 1 ; idx > 0; idx -- ) {
+		    if( (arg1[idx] == ' ')  || ( arg1[idx] == '\t' ) ) {
+			arg1[idx] = 0;
+		    } else {
+			break;
+		    }
+		}
+
+		inaddr.s_addr = inet_addr(arg1);
+		if (inaddr.s_addr == (in_addr_t)(-1)) continue;
+		lineno++;
+		debug("found vlan entry %d: %s %s\n",lineno, cmd, arg1);
+		vl = (vlans_t *)malloc(sizeof(vlans_t));
+		if (vlans == NULL) vlans = vl;
+		if (lvl != NULL) lvl->next = (void *)vl;
+		memset(vl, 0, sizeof(vlans_t));
+		vl->next = NULL;
+		memcpy(vl->name, cmd, strlen(cmd));
+		memcpy(&vl->name[strlen(cmd)], ".local", 7);
+		memcpy(&vlans->ip_addr ,&inaddr , sizeof(struct in_addr));
+		lvl = vl;
+	 }//if
+    }//while
+}
+
+
 /*****************************************************************************
  * Read a service registry and add a service record for each entry.
  *
  *****************************************************************************/
-#define LINE_LEN 1024
-static void info_read_serviceconf( char * service_file , const char * fqdn, 
-                                   char * hostname) {
+static void info_read_serviceconf( char * service_file , const char * fqdn, char * hostname) {
 
     FILE *fp;
     char line[LINE_LEN];
@@ -658,6 +720,7 @@ static void info_read_serviceconf( char * service_file , const char * fqdn,
 
 	char * serv_name = NULL;
 	char * ptr_name  = NULL;
+	char * target    = NULL;
 
         memset(proto,0,LINE_LEN);
         memset(service,0,LINE_LEN);
@@ -751,17 +814,18 @@ static void info_read_serviceconf( char * service_file , const char * fqdn,
 		    escaped[63] = 0;
 	        }
 	        asprintf(&serv_name, "%s._%s._%s.local",escaped,service,proto);
+	        asprintf(&target, "%s.local",escaped);
 	        free(escaped);
-	        asprintf(&ptr_name , "_%s._%s.local",service,proto);
 	    } else {
 	        asprintf(&serv_name, "%s._%s._%s.local",hostname,service,proto);
-	        asprintf(&ptr_name , "_%s._%s.local",service,proto);
+	        asprintf(&target, "%s.local",hostname);
 	    }
+	    asprintf(&ptr_name , "_%s._%s.local",service,proto);
 
 	    /* reset last text_rr, because we start a new scv rr */
 	    txt_rr = NULL;
 
-	    if( (svc_rr = newSrvRec(serv_name, prio, weight, port, fqdn )) != NULL ) {
+	    if( (svc_rr = newSrvRec(serv_name, prio, weight, port, target )) != NULL ) {
                 ll_add(records, svc_rr );
 	        svc_rr->auth = 1;
 	        if( ptr_name != NULL ) {
@@ -769,6 +833,7 @@ static void info_read_serviceconf( char * service_file , const char * fqdn,
 	        }
             }
 	    free(serv_name);
+	    free(target);
 	    if( ptr_name != NULL ) { free(ptr_name); }
         }
     }
@@ -799,6 +864,8 @@ int info_init(void) {
     char * namebuf = NULL;
     char * raw_namebuf = NULL;
     char * dot_pos = NULL;
+    char * vlname = NULL;
+    vlans_t *vl;
 
     debug("Initialize host data ...\n");
 
@@ -818,6 +885,8 @@ int info_init(void) {
     asprintf(&namebuf,"%s.local", raw_namebuf );
     
     records = ll_new();
+
+    info_read_vlans(config.vlans_file);
 
     /*
      * Find our ethernet interfaces and add A records for
@@ -859,7 +928,15 @@ int info_init(void) {
 		    memcpy(&inaddr, &(addr->sin_addr) , sizeof(struct in_addr));
 		    debug("  %s\n", inet_ntoa(inaddr) );
 
-		    if( (rr = newARec(namebuf,&inaddr)) != NULL ) {
+		    for (vl=vlans; vl != NULL; vl = (vlans_t *)vl->next){
+			if (vl->ip_addr.s_addr == inaddr.s_addr){   //found
+			    vlname = vlans->name;
+			    break;
+			}
+		    }
+		    if (vl == NULL) vlname = namebuf;		    //nothing found
+
+		    if( (rr = newARec(vlname,&inaddr)) != NULL ) {
 		      /* want to be authoratative for A records */
 		      rr->auth = 1;
     		      ll_add(records , rr );
@@ -867,7 +944,7 @@ int info_init(void) {
 		      asprintf( &revname , "%d.%d.%d.%d.in-addr.arpa" ,
 				    ib[3] , ib[2], ib[1], ib[0] );
 		      debug("Reverse address is %s\n" , revname );
-		      ll_add(records , newPtrRec(revname,namebuf));
+		      ll_add(records , newPtrRec(revname,vlname));
 		      free(revname);
 		    }
 		}
@@ -920,6 +997,12 @@ int info_init(void) {
 	if( (rr = newLocalHinfoRec(namebuf)) != NULL ) {
 	  rr->auth = 1;
           ll_add(records , rr);
+	}
+	for (vl=vlans; vl != NULL; vl = (vlans_t *)vl->next){
+	    if( (rr = newLocalHinfoRec(vlans->name)) != NULL ) {
+		rr->auth = 1;
+		ll_add(records , rr);
+	    }
 	}
     }
 
@@ -1026,7 +1109,7 @@ int info_search( search_state * state ) {
 	/*debug("Search %s, have %s type %d\n", state->dname, rr->domain, rr->type ); */
 
 	if( ( (state->type == T_ANY) || (rr->type == state->type) ) && 
-	    ( (state->dname == NULL) || (strcmp(state->dname,rr->domain) == 0) ) ) 
+	    ( (state->dname == NULL) || (strcasecmp(state->dname,rr->domain) == 0) ) )
 	{
 	
 	    if( (state->dname == NULL) && ! rr->auth ) {

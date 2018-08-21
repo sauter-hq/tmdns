@@ -22,9 +22,12 @@
 
 #define MAX_ALSO_LOCAL 32
 
+#define VLANS_FILE_DEFAULT "vlans"
 /* 
     more parameters may be added later.
  */
+
+
 struct config {
   int  port;
   int  daemon_mode;
@@ -44,6 +47,7 @@ struct config {
   int  allow_nonlocal;
   const char * also_local[MAX_ALSO_LOCAL + 1];
   char dynamic_service_file[CONF_PATH_LEN];
+  char vlans_file[CONF_PATH_LEN];
 };
 
 /** 

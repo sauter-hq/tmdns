@@ -13,8 +13,18 @@
 
 #ifndef INFO_H
 #define INFO_H 1
+#define NAME_LEN 128
+
 
 #include "llist.h"
+
+typedef struct {
+  struct in_addr ip_addr;
+  char name[NAME_LEN];
+  void * next;
+} vlans_t;
+
+vlans_t *vlans;
 
 typedef struct {
   const char * dname;
