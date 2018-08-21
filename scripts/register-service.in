@@ -1,0 +1,185 @@
+#!!PERL! -w
+
+my $regfile = "!DYNAMIC_SERVICE_FILE_DEFAULT!";
+
+
+use Getopt::Long;
+
+sub usage {
+
+    my $err = shift;
+
+    print STDERR <<EOF;
+register-service:  register a service to be announced via mDNS
+
+$err
+
+usage:   register-service (--add|--del) --service=<name> 
+                          [--port=<port>] [--protocol=<udp|tcp|both>]
+                          [--priority=<number>] [--weight=<number>]
+			  [--name=<string>]
+
+where:
+
+    add        - add a service entry.
+    del        - delete a service entry. 
+
+    service    - a name for the service, such as "http"
+    port       - the port this service listens on
+    protocol   - the protocol for this service. Usually tcp or udp
+    prio       - a priority that should be assigned to this service.
+    		 clients should use the the service with the lowest
+		 priotity value found. Default is 0
+    weight     - a weight assigned to this service. If there are more
+                 than one service with a given priority, the service
+		 with the lower weight is choosen more often than a
+		 service with a heigher value.
+    name       - You can specify an optional name for the service, in
+    		 which case the service will be announced as
+		 "<name>._<proto>._<service>.local." instead of the name
+		 "<proto>._<service>.local."
+
+You may omit the 'port' argument if the service can be found by a call
+to "getservbyname()", which looks for the name in /etc/services or where 
+ever you get your services from. 
+
+When you do not specify a protocol, the service is registered for tcp and
+udp as long as you also specify a port. Otherwise the service will be 
+registered for those protocols that were found by "getservbyname()".
+
+Note: The directory for the registry file !DYNAMIC_SERVICE_FILE_DEFAULT!
+      must be writeable to update the registry file! 
+
+EOF
+}
+
+my $service = undef;
+my $proto   = "both";
+my $port    = undef;
+my $prio    = 0;
+my $weight  = 0;
+my $do_add  = 0;
+my $do_del  = 0;
+my $name    = "";
+
+sub getservice {
+  my $service = shift;
+
+  my @tcp_entry;
+  my @udp_entry;
+
+  if( ($proto eq "tcp") || ($proto eq "both")  ) {
+      @tcpentry = getservbyname($service,"tcp");
+      if( scalar(@tcpentry) == 0 ) {
+          if( $proto eq "both") {
+	     $proto = "udp";
+	  } else {
+	     $proto = "";
+	  }
+      } else {
+          $port = $tcpentry[2];
+      }
+  }
+
+  if( ($proto eq "udp") || ($proto eq "both")  ) {
+      @udpentry = getservbyname($service,"udp");
+      if( scalar(@udpentry) == 0 ) {
+          if( $proto eq "both") {
+	     $proto = "tcp";
+	  } else {
+	     $proto = "";
+	  }
+      } else {
+          $port = $udpentry[2];
+      }
+   }
+}
+
+
+sub substreg {
+
+    my $sproto = shift;
+
+    my @lines;
+
+    if( open(SRV,"<$regfile") ) {
+        while(<SRV>) {
+	   chomp;
+	   if( ! m/^\s*$sproto\s+$port\s+$service\s+\d+\s+\d+(\s+$name)?\s*$/ ) {
+	       push @lines , $_;
+	   }
+	}
+	close SRV;
+
+    } else {
+        # can not open registry file. Do nothing as this is quiet possible.
+	# at least after a reboot.
+    }
+
+    if( $do_add ) {
+        my $line = "$sproto\t$port\t$service\t$prio\t$weight";
+	if( $name ) { $line .= "\t$name"; }
+        push @lines , $line;
+    }
+
+    if( ( -f "$regfile" ) && ( ! rename("$regfile" , "$regfile.old") ) ) {
+       die "can not rename $regfile : $!\n";
+    }
+
+    if( open(SRV,">$regfile") ) {
+        print SRV join("\n", @lines ) . "\n";
+	close(SRV);
+    } else {
+        die "can not open $regfile for writing : $!\n";
+    }
+
+    unlink "$regfile.old";
+
+}
+
+
+GetOptions( "help"        => \$help,
+	    "service=s"   => \$service,
+	    "protocol=s"  => \$proto,
+	    "port=i"      => \$port,
+	    "priority=i"  => \$prio,
+	    "weight=i"    => \$weight,
+	    "name=s"      => \$name,
+	    "add"         => \$do_add,
+	    "del"         => \$do_del,
+	  );
+
+if( $help ) {
+    usage("");
+    exit(0);
+}
+
+if( ! $service ) {
+    usage("you must specify a service.");
+    exit(1);
+}
+
+if( ( !( $do_add || $do_del)) || ($do_add == $do_del) ) {
+    usage("you must specify exectly one of --add or --del.");
+    exit(1);
+}
+
+if( ! $port ) {
+    getservice($service);
+}
+
+if( ! $port ) {
+    print STDERR "Error: can not find a port for service $service\n";
+    exit(1);
+}
+
+print "service entry is $proto $port $prio $weight $name\n";
+
+if( $proto eq "both" ) {
+  substreg("tcp");
+  substreg("udp");
+} else {
+  substreg($proto);
+}
+
+

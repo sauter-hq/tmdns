@@ -1,0 +1,214 @@
+
+
+About
+=====
+
+tmdns is tiny/trivial Multicast DNS Responder for Linux. It should allow you
+to take part in a zeroconf environment.
+
+tmdns is Copyright (C) 2003 Andreas Hofmeister (andreas.hofmeister@pyramid.de)
+and others (see Authors & History below).
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+WARNING
+=======
+
+This is an alpha version . It may compile, install, run, and crash
+your network. It may even be usable. 
+
+There hasn't been much testing at all. Please report any 
+bugs and/or suggestion to me (andreas.hofmeister@pyramid.de) .
+
+
+INSTALL
+=======
+
+There is a 'spec'-file for rpm based dists. You may want to use that if 
+you are using RedHat or Mandrake. 
+
+Other folks just do
+
+./configure [--enable-debug] [--enable-static] &&
+make &&
+make install 
+
+
+If you use an CVS checkout, run "./autogen.sh" before configure.
+
+If your dist is not known to the configure script, you'll get a warning
+about not having an init script for your dist. See the scripts for other
+dists in './init.d' to get an idea how to do-it-yourself, test and send
+me your result. 
+
+
+Configuration
+=============
+
+tmdns can be used without any configuration. If you want to use the DNS
+unicast/multicast bridge feature some minimal configuration is needed.
+
+To get a configuration file template, run "tmdns -P", this will print a default
+config on stdout. Run "tmdns -v" to see where to put the config file.
+
+---snip---
+
+nameserver 127.0.0.1
+search local
+
+---snap---
+
+There is also a little hack to allow your machine to use both, unicast and 
+multicast DNS at the same time. When tmdns gets a question that it should 
+not answer, it will return a failure message to the calling process. The 
+resolver library then should use the next server from the server list in 
+"resolv.conf". In short, put this in your resolv.conf :
+
+---snip---
+
+nameserver 127.0.0.1
+nameserver <ip-already-here>
+nameserver <your-falback-dns-server>
+
+search <domain already here> local
+
+---snap---
+
+You should always put "local" to the end of the list as any query for .local.
+names will introduce an notable delay. 
+
+Some programs may fail with that setup, notably the "host" program that comes
+with debian (potato).  The good news is, that mozilla and many other programs 
+work fine.
+
+Please let me know about problems with such a setup.
+
+Using tmdns with BIND
+=====================
+
+You can use tmdns to allow BIND to resolve the .local zone and the ip local
+reverse zones. 
+
+- enable dns bridging (dns_bridge = yes)
+- choose a different dns bridge port eg. "dns_port = 5354"
+- configure the .local, .254.169.in-addr.arpa and 0.8.e.f.ip6.arpa as
+  forwarder zones in your "named.conf"
+
+---snip---
+
+zone "local." {
+        type forward;
+	forward only;
+        forwarders { 127.0.0.1 port 5354 ; };
+};
+
+zone "254.169.in-addr.arpa." {
+        type forward;
+	forward only;
+        forwarders { 127.0.0.1 port 5354 ; };
+};
+
+zone "0.8.e.f.ip6.arpa." {
+        type forward;
+	forward only;
+        forwarders { 127.0.0.1 port 5354 ; };
+};
+
+---snap---
+
+When doing this, you should restrict access to your name server to the local
+network, either by firewall rules or with acl restrictions in your bind 
+configuration.
+
+If you also want to bridge other private networks this way, remember that you
+can not have both, a regular zone and a forward zone. This means you have to 
+use mDNS for all your hosts within that network.
+
+Operation
+=========
+
+Send an SIGHUP to re-read the config. This will not re-open the sockets tmdns 
+is listening on, so you need to restart it after network config changes.
+
+
+Upgrade
+=======
+
+tmdns can upgrade its configuration file after update. Simply run 
+"tmdns -c <old-config> -P > <new-config>". This will read your old
+configuration, ignores all settings not longer valid and add defaults for
+new options available in the new version.
+
+Please review the new configuration before installing the new config.
+
+
+Limitations
+===========
+
+- tmdns implements most of the requirements from the mDNS draft specs (see 
+  "docs/draft-cheshire-dnsext-multicastdns-03.txt" and should be a mostly 
+  functional implementation. However, it does not fully implement the algorithm 
+  for conflict resolution and it does not fall back into probing mode when
+  a name conflict is detected. (it just drops its own records)
+
+- there is no caching yet.
+
+- no detection of ip config changes is implemented.
+
+- no power management support has been built in.
+
+- limitted IPv6 support yet. Tmdns does not listen on IPv6 addresses. 
+  However, local IPv6 addresses are advertised and IPv6 addresses recieved are
+  forwarded to an unicast querier. Full IPv6 support should not be that hard to
+  implement, but I don't have a testing environment
+
+- tmdns accepts AND SENDS packets up to 9k - dns packets are normally limited
+  to 512 bytes. If some other system crashes because of this, that's my fault,
+  but it would also be a case for a CERT advisory ... I just want to see if 
+  we could get away with that.
+
+- As we talking about security, please don't run tmdns as root. I wouldn't be 
+  suprised at all if there were some buffer overflows and other nasty things. 
+  Use the "username" option in the config file.
+
+
+Authors & History
+=================
+
+The first version has been written by Andreas Hofmeister (thats me) in about 
+a week  during January 2003. It hasn't been written from scratch however.
+
+Much of the code has been taken from a never officially released 
+version 1.1 of "dproxy", a simple caching dns proxy by Matthew Pratt 
+(see http://dproxy.sourceforge.net), I was working on that for some time.
+
+Some parts have survived my hacking session on that program, notably the 
+linked list implementation by Benjamin Close <benjsc@hotmai.com> and the config
+file parser, originally written by Jeroen Vreeken (pe1rxq@amsat.nl).
+
+The stuff to enumerate network devices has been taken from the dante socks 
+proxy, which in turn got it from OpenBSD. My first try was with the version
+from heimdal kerberos - however the license for that implementaion was not GPL
+compatible. Open source is such a nice thing, isn't it :-}
+
+A year later (January 2004)
+...........................
+
+In the meantime tmdns has been packaged for Mandrake, so it could be some folks
+even use it.
+
+Steve Grubb sent me a bunch of patches to fix a number of nasty programming
+style (not making local functions static, not using const, not taking care of
+signedness etc.) and other bugs. 
+
+I also got a Mac to play with, so I can investigate some remaining problems 
+with MacOS X.
+

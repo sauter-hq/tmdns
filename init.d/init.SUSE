@@ -1,0 +1,74 @@
+#! /bin/sh
+#
+### BEGIN INIT INFO
+# Provides:          tmdns
+# Required-Start:    $syslog $network
+# Required-Stop:     $syslog $network
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Short-Description: tmdns provide a multicast DNS responder.
+# Description:       Start tmdns to take part in a zeroconf environment
+### END INIT INFO
+# 
+
+
+# Check for missing binaries (stale symlinks should not happen)
+TMDNS_BIN=/usr/sbin/tmdns
+
+|| {}
+
+. /etc/rc.status
+
+# Reset status of this service
+rc_reset
+
+case "$1" in
+    start)
+	if [ ! -x "$TMDNS_BIN" ] 
+	then
+	    echo "$TMDNS_BIN not installed" 
+	    exit 5
+	fi
+	echo -n "Starting tmdns "
+	startproc $TMDNS_BIN
+	rc_status -v
+	;;
+    stop)
+	echo -n "Shutting down tmdns "
+	killproc -TERM $TMDNS_BIN
+	rc_status -v
+	;;
+    try-restart|condrestart)
+	$0 status
+	if test $? = 0; then
+		$0 restart
+	else
+		rc_reset	# Not running is not a failure.
+	fi
+	rc_status
+	;;
+    restart)
+	$0 stop
+	$0 start
+	rc_status
+	;;
+    reload|force-reload)
+	echo -n "Reload service tmdns "
+	killproc -HUP $TMDNS_BIN
+	rc_status -v
+	touch /var/run/tmdns.pid
+	;;
+    status)
+	echo -n "Checking for service tmdns "
+	checkproc $TMDNS_BIN
+	rc_status -v
+	;;
+    probe)
+	test -f /etc/tmdns.conf && test /etc/tmdns.conf -nt /var/run/tmdns.pid && echo reload
+	;;
+    *)
+	echo "Usage: $0 {start|stop|status|try-restart|restart|force-reload|reload|probe}"
+	exit 1
+	;;
+esac
+rc_exit

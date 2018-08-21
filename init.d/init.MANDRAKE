@@ -1,0 +1,107 @@
+#!/bin/bash
+#
+# tmdns           This shell script takes care of starting and stopping
+#                 tmdns
+#
+# chkconfig: 345 45 55
+# description: Tmdns is tiny/trivial Multicast DNS Responder for Linux. \
+# It should allow you to take part in a zeroconf environment.
+# probe: false
+# processname: /usr/sbin/tmdns
+# config: /etc/sysconfig/network
+# config: /etc/tmdns.conf
+# pidfile: /var/run/tmdns.pid
+
+PATH=/sbin:/bin:/usr/bin:/usr/sbin
+
+. /etc/init.d/functions
+
+# Get config.
+test -f /etc/sysconfig/network && . /etc/sysconfig/network
+
+# More config
+test -f /etc/sysconfig/tmdns && . /etc/sysconfig/tmdns
+
+# Check that we are root ... so non-root users stop here
+[ `id -u` = 0 ] || exit 1
+
+# Check that networking is up.
+[ "${NETWORKING}" = "no" ] && exit 0
+
+[ -f /usr/sbin/tmdns ] || exit 1
+[ -f /usr/sbin/update-resolvrdv ] || exit 1
+[ -f /etc/tmdns.conf ] || exit 1
+
+
+RETVAL=0
+prog="tmdns"
+
+start() {
+    # Start daemons.
+    gprintf "Starting %s: " $prog
+    daemon $prog "$EXTRAOPTIONS"
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ]; then
+	touch /var/lock/subsys/$prog
+	/usr/sbin/update-resolvrdv
+    fi
+    echo
+    return $RETVAL
+}
+
+stop() {
+    # Stop daemons.
+    gprintf "Stopping %s: " $prog
+    killproc $prog
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ]; then
+	rm -f /var/lock/subsys/$prog
+	/usr/sbin/update-resolvrdv -r
+    fi
+    echo
+    return $RETVAL
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    /usr/bin/killall -HUP $prog
+    RETVAL=$?
+    return $RETVAL
+}
+
+_status() {
+    status $prog
+    RETVAL=$?
+    return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	status)
+		_status
+		;;
+	restart)
+		restart
+		;;
+	condrestart)
+		[ -f /var/lock/subsys/$prog ] && restart
+		;;
+	reload)
+		reload
+		;;
+	*)
+        	gprintf "Usage: %s {start|stop|status|restart|condrestart|reload}\n" $0
+		exit 1
+esac
+
+exit $?

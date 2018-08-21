@@ -1,0 +1,557 @@
+2005-08-13 18:30  macfreek
+
+	* configure, configure.in: Bumped version to 0.5.3, since there was
+	  already a 0.5.2 tagged version in CVS, even though it was never
+	  released as such
+
+2005-08-13 17:51  macfreek
+
+	* ChangeLog, autogen.sh, scripts/Makefile.am, scripts/Makefile.in:
+	  small fixes in Makefile.am so that make distcheck succeeds, run
+	  autoreconf to generate Makefile.in, added comments
+
+2005-08-13 17:44  macfreek
+
+	* docs/draft-cheshire-dnsext-multicastdns.txt: New version of mDNS
+	  draft released at www.multicastdns.org
+
+2005-08-10 16:07  macfreek
+
+	* autogen.sh: Remove autom4te.cache dir after running autogen.sh,
+	  so it doesn't accidentilly end up in CVS
+
+2005-08-10 15:48  macfreek
+
+	* Makefile.in, aclocal.m4, configure, configure.in,
+	  init.d/Makefile.in, scripts/Makefile.in, server/Makefile.in: Use
+	  automake 1.8 instead of 1.6 and fix 'underquoted definition of
+	  CHECK_DIST' warning
+
+2005-05-11 22:18  macfreek
+
+	* Makefile.in, aclocal.m4, configure, configure.in,
+	  init.d/Makefile.in, scripts/Makefile.in, server/Makefile.in: Fix
+	  #964908, now finds resolv lib on AMD64
+
+2004-05-04 07:31  andi
+
+	* server/: netlink_glue.c, tmdns.c: Do not touch pid file when in
+	  debug mode but check if it exists. Look for address change events
+	  from netlink.
+
+2004-05-03 07:33  andi
+
+	* ChangeLog: Updated from cvs logs
+
+2004-05-03 07:32  andi
+
+	* server/: info.c, serv_udp.c: Ignore interfaces that are down.
+
+2004-05-03 07:19  andi
+
+	* ChangeLog: Re-generated from cvs log
+
+2004-05-03 07:16  andi
+
+	* Makefile.in, aclocal.m4, configure, configure.in,
+	  init.d/Makefile.in, scripts/Makefile.in, server/Makefile.am,
+	  server/Makefile.in, server/config.h.in, server/info.c,
+	  server/libnetlink.c, server/libnetlink.h, server/netlink_glue.c,
+	  server/netlink_glue.h, server/serv_udp.c, server/tmdns.c: Some
+	  experimental netlink stuff to track changes in network config. To
+	  try : configure --enable-netlink. Must run as root to re-init
+	  interfaces.
+
+	  Bugfix in info.c: do not advertise addresses on links that are
+	  down.
+
+2004-05-02 20:54  andi
+
+	* server/: Makefile.am, serv_udp.c, tmdns.c: Counted the number of
+	  non-multicast sockets when calculating the number of needed mcast
+	  sockets. Umpf.
+
+2004-05-02 19:11  andi
+
+	* server/tmdns.c: getopt() actually returns int not char. Thanks to
+	  Hubert Figuiere.
+
+2004-02-20 02:18  andi
+
+	* configure, configure.in, tmdns.spec: Removed static .spec file,
+	  bumped to 0.5.2
+
+2004-02-20 02:14  andi
+
+	* Makefile.in, configure, configure.in, tmdns.spec, tmdns.spec.in:
+	  Auto-gen .spec from .spec.in
+
+2004-02-20 01:39  andi
+
+	* ChangeLog: Updated from cvs log.
+
+2004-02-20 01:38  andi
+
+	* Makefile.am, Makefile.in, configure, configure.in: Added missing
+	  .spec file. Bumped version to 0.5.1
+
+2004-02-19 03:13  andi
+
+	* server/debug.c: Fixed non-debug build
+
+2004-02-19 02:43  andi
+
+	* ChangeLog: Updated from cvs log messages
+
+2004-02-19 02:41  andi
+
+	* configure, configure.in, tmdns.spec: Prepare for release 0.5.0
+
+2004-02-18 23:07  andi
+
+	* NEWS, README, TODO, server/svc, server/tmdns.8, server/tmdns.c,
+	  server/tmdns.services.5: More speeling fixes from Steve, some
+	  corrections to limitations in README.  Removed last hint about
+	  the droped -F option, documentet -v switch.
+
+2004-02-16 05:36  andi
+
+	* README: Fixed bind example to include a "forward only" statement.
+
+2004-02-16 05:17  andi
+
+	* server/: debug.c, debug.h, serv_udp.c, tmdns.c, tmdns.h: added
+	  log_perror() function to debug.c, use it in serv_udp.c. Fixed
+	  announcements after sighup.
+
+2004-02-16 02:41  andi
+
+	* tmdns.spec: Fool autoconf when building from cvs check-out.
+
+2004-02-16 02:37  andi
+
+	* TODO, configure, configure.in: Thrown out rpm based check,
+	  replaced by simpler *-release checks
+
+2004-02-16 02:35  andi
+
+	* server/: info.c, tmdns.c: SOme more debugging (dump registry,
+	  normal exit)
+
+2004-02-16 02:33  andi
+
+	* init.d/init.REDHAT: Missing echo in init script
+
+2004-02-15 00:07  andi
+
+	* server/: conf.c, info.c, info.h, serv_udp.c, tmdns.c: Patch 12a)
+	  and b) from Steve:  - avoid start/stop message beeing overwritten
+	  in init.REDHAT  - Buffer overflow protection parsing config  -
+	  unlink pid file if getifaddr fails  - pid_file was not getting
+	  chown'd  - Supplemental groups were not being dropped  - Session
+	  was not being init'd.   - Pid file needs to be created
+	  exclusively  and some more type corrections.
+
+2004-02-12 05:41  andi
+
+	* compile: File from newer auto*
+
+2004-02-12 05:22  andi
+
+	* ChangeLog: Update from cvs log
+
+2004-02-12 05:20  andi
+
+	* tmdns.spec: Patch 11 from Steve: remove tmdns user/group on rpm
+	  package de-install.
+
+2004-02-11 23:14  andi
+
+	* server/: conf.c, info.c, tmdns.services.5: Remove trailing blanks
+	  after variable name in conf.c. Allow additional PTR records for
+	  any service record.
+
+2004-02-11 00:22  andi
+
+	* server/svc: Use text from man-page as file comment, disable all
+	  lines.
+
+2004-02-10 23:06  andi
+
+	* configure, configure.in, tmdns.spec, init.d/Makefile.am,
+	  init.d/Makefile.in, init.d/init.MANDRAKE, init.d/init.REDHAT:
+	  Patch 10 from Steve: Use tmdns -P to create default config,
+	  install services.conf, init script for mandrake, updates to
+	  redhat init script.  Me: hopefully fix dist detect via rpm
+
+2004-02-09 20:24  andi
+
+	* ChangeLog: Updated Changelog from cvs
+
+2004-02-09 19:30  andi
+
+	* server/: serv_udp.c, serv_udp.h, tmdns.c: Dynamic allocation of
+	  file decriptor array.
+
+2004-02-09 14:29  andi
+
+	* ChangeLog, configure, configure.in, init.d/Makefile.am,
+	  init.d/Makefile.in, init.d/init.SUSE, scripts/Makefile.am,
+	  scripts/Makefile.in: Fixed dist detect via rpm, different
+	  derecrion for SuSE,handle init.d correctly for SuSE9. Added SuSE
+	  init script.
+
+2004-02-09 14:27  andi
+
+	* server/: dns.h, info.c, serv_udp.c, svc, tmdns.c: Fixed ipv6
+	  reverse address construction, Open multicast socket even when
+	  ipv4 address is listet  by getifaddrs  after ipv6 address.
+
+2004-02-09 07:27  andi
+
+	* ChangeLog: Updated ChangeLog from cvs log messages.
+
+2004-02-09 07:23  andi
+
+	* configure, configure.in: Fixed summary in configure.in,
+	  regenerated auto*
+
+2004-02-09 07:07  andi
+
+	* server/info.c: AF_INET6 reverse address record in registry
+
+2004-02-09 05:30  andi
+
+	* configure, configure.in: Added dist test for mandrake, rebuilt
+	  auto*
+
+2004-02-09 05:29  andi
+
+	* server/: dns.c, dns.h, info.c, tmdns.c, tmdns.h: Throw away some
+	  stuff not longer needed. Use MAXDSTRING when refering to the
+	  length of some strings in resource records instead of MAXDNAME.
+
+2004-02-09 03:26  andi
+
+	* server/: dns.c, info.c: More const.
+
+2004-02-09 02:59  andi
+
+	* server/: dns.c, dns.h, info.c: Better bounds checking when
+	  processing dns buffers.
+
+2004-02-09 01:14  andi
+
+	* server/: conf.c, dns.h, info.c, info.h, tmdns.c: Fixed remaining
+	  compiler warnings caused recent changes. Fixed copy_array in
+	  conf.c so that it actualy has const char * as 1. arg (strtok
+	  modified it).
+
+2004-02-09 00:38  andi
+
+	* server/dns.h: Insert correct signatures for function pointers in
+	  typedef for dns_rr.
+
+2004-02-09 00:30  andi
+
+	* tmdns.spec, init.d/Makefile.am, init.d/Makefile.in,
+	  init.d/init.REDHAT, server/conf.c, server/conf.h, server/debug.c,
+	  server/debug.h, server/dns.c, server/dns.h, server/info.c,
+	  server/info.h, server/llist.c, server/llist.h, server/serv_udp.c,
+	  server/serv_udp.h, server/tmdns.8, server/tmdns.c,
+	  server/tmdns.conf.5, server/tmdns.services.5: Patch 9 from Steve:
+	  const & signed fixes, typo fixes in man pages, spec corrected to
+	  include update-resolvrdv, Makefile.am fixed. Regenerated auto*
+	  stuff.
+
+2004-02-08 07:46  andi
+
+	* README, TODO, tmdns.spec, init.d/init.REDHAT,
+	  scripts/Makefile.am, scripts/Makefile.in,
+	  scripts/update-resolvrdv: Added .spec file and related stuff,
+	  regenerated auto* files.
+
+2004-02-08 06:53  andi
+
+	* server/: conf.c, conf.h, dns.c, dns.h, info.c, info.h, llist.h,
+	  serv_udp.c, serv_udp.h, tmdns.c: De-crapify tmdns main code. It
+	  now implements a lot more requirements from mDNS draft, including
+	  known answer suppression. Also a number of fixes from Steve
+	  including two possible core dumps.
+
+2004-02-06 22:23  andi
+
+	* configure, configure.in, server/config.h.in, server/info.c,
+	  server/serv_udp.c: Fixed autoconf check for iffaddrs.h (it's not
+	  ifaddr.h). Include system supplied ifaddrs.h instead of
+	  tm_ifaddrs.h when available.
+
+2004-02-06 21:44  andi
+
+	* server/: dns.c, dns.h, serv_udp.c, tmdns.c: More type
+	  corrections. Fixed broken mcast send. Some more syslogging.  Send
+	  3 announces after startup instead of just 1.
+
+2004-02-06 20:46  andi
+
+	* server/: Makefile.am, Makefile.in, getifaddrs.c, ifaddrs.h,
+	  info.c, serv_udp.c, tm_ifaddrs.h: Patch 6a from Steve: avoid gcc
+	  confusion about which ifaddrs.h to include when ifaddrs.h is
+	  present on the system.
+
+2004-02-06 03:54  andi
+
+	* ChangeLog, configure, configure.in: Added check for inttypes.h to
+	  configure.in, regenerated autoconf stuff.  Updateded ChangeLog
+
+2004-02-06 02:18  andi
+
+	* server/: dns.h, info.c, llist.h, serv_udp.c, tmdns.c: Implemented
+	  ttl checking and loop protection. Also included some spelling
+	  corrections from Steve.
+
+2004-02-05 19:49  andi
+
+	* server/: dns.c, dns.h, serv_udp.c, serv_udp.h, svc, tmdns.c:
+	  Distinguish between query from unicast and query from mcast to
+	  make MacOS-X happy again. Seems it wants unicast fromated packets
+	  back when asking from a unicast socket.
+
+2004-02-05 03:37  andi
+
+	* server/: conf.c, conf.h, info.c, serv_udp.c: Use ip ttl of 255 on
+	  all interfaces. moved is_excluded_interface() from serv_udp.c
+	  into conf.c. Do not include addresses of excluded interfaces into
+	  the resource db.
+
+2004-02-04 22:21  andi
+
+	* server/: conf.c, conf.h, dns.c, dns.h, tmdns.c: Use other ttl
+	  value when responding to bridged unicast queries. This is usefull
+	  when using tmdns together with bind.
+
+2004-02-04 00:57  andi
+
+	* server/: dns.c, dns.h, info.c, svc, tmdns.services.5: Implemented
+	  TXT records. The service file parsing stuff still needs some more
+	  cleanup.
+
+2004-02-03 05:05  andi
+
+	* server/: conf.c, conf.h, serv_udp.c, serv_udp.h, tmdns.c:
+	  Implemented option to exclude interfaces from mdns.
+
+2004-02-03 04:12  andi
+
+	* server/: dns.h, info.c: Now all service records are regarded as
+	  authoratative, not just the A (and the yet to be implemented
+	  AAAA) records.
+
+2004-02-03 03:36  andi
+
+	* server/: serv_udp.c, tmdns.c: Removed socket argument from
+	  probe() and announce() as we never send anything to a unicast
+	  socket while probing/annoucement. Implemented godby message.
+
+2004-02-03 01:57  andi
+
+	* server/: conf.c, conf.h, debug.c, debug.h, dns.c, dns.h, info.c,
+	  info.h, llist.c, llist.h, serv_udp.c, tmdns.c: Updated some
+	  copyright headers. Implemented support for multihomed hosts, this
+	  may cause probs when our host has multiple interfaces into the
+	  same ethernet.
+
+2004-02-01 15:17  andi
+
+	* server/dns.h: Set DNSDATASIZE to 9000 byte so we can accept the
+	  maximum message size from draft-03 (18.)
+
+2004-02-01 15:02  andi
+
+	* server/: dns.c, dns.h, serv_udp.c, svc, tmdns.c: Do not repeat
+	  the query in multicast replys
+
+2004-02-01 01:36  andi
+
+	* server/: conf.c, dns.c, dns.h, info.c, llist.c, serv_udp.c,
+	  tmdns.c: Patch 6 from Steve: Some spelling corrections and a
+	  check for result from getifaddrs.
+
+2004-02-01 01:32  andi
+
+	* server/info.c: Wrong prefix for ptr target. Should be hostname
+	  not hostname.local.
+
+2004-02-01 01:28  andi
+
+	* docs/draft-cheshire-dnsext-multicastdns.txt: Newer draft (03).
+	  Explains why bit 15 is set in the "class" field of some rr's from
+	  MacOS X 10.3 machines.
+
+2004-01-31 18:22  andi
+
+	* ChangeLog: Updated from cvs log again.
+
+2004-01-31 18:20  andi
+
+	* configure, configure.in: Added check for pynix, bumped version to
+	  0.2
+
+2004-01-31 18:17  andi
+
+	* README: Added note about BIND, recent history.
+
+2004-01-31 18:16  andi
+
+	* init.d/: Makefile.am, Makefile.in, init.PYNIX, initscript: Add
+	  initscript for pynix.
+
+2004-01-31 18:03  andi
+
+	* server/: Makefile.am, Makefile.in, svc, tmdns.8, tmdns.conf.5,
+	  tmdns.services.5: Add man pages
+
+2004-01-31 18:03  andi
+
+	* server/info.c: Prefix service dnames with the hostname when no
+	  explicit service name is given.
+
+2004-01-31 14:05  andi
+
+	* server/tmdns.c: Bugfixes: domain labels are not case-sensitive so
+	  do strcasecmp. Mac seems to send 32769 in class when asked for A
+	  record, implemented workaround.
+
+2004-01-31 03:17  andi
+
+	* server/: dns.h, info.c, info.h, tmdns.c: Some more typr
+	  corrections and a little bit more comments.
+
+2004-01-31 01:20  andi
+
+	* server/serv_udp.c: Eliminated strerror in serv_udp.c - just for
+	  consistency.
+
+2004-01-31 01:08  andi
+
+	* server/info.c: Typo in debug message
+
+2004-01-31 00:57  andi
+
+	* server/getifaddrs.c: Parts from Steve's patch 5a that I missed in
+	  my changes checked in together whit his first set of changes.
+
+2004-01-31 00:46  andi
+
+	* server/debug.c: Don't use strerror directly in f_debug_perror(),
+	  use debug_errmsg that checks for HAVE_STRERROR instead.
+
+2004-01-31 00:39  andi
+
+	* server/: debug.c, debug.h, serv_udp.c, tmdns.c: 5. set of patches
+	  from Steve: const char for debug stuff + repair of debugging that
+	  was broken in the 2nd set.
+
+2004-01-31 00:30  andi
+
+	* server/: conf.c, dns.c, info.c, serv_udp.c, tmdns.c: 4th set of
+	  patches from Steve: removal of unneccessary pointer deref. and
+	  some NULL pointer checks.
+
+2004-01-31 00:20  andi
+
+	* server/: conf.c, conf.h, dns.c, dns.h, info.c, info.h,
+	  serv_udp.c, serv_udp.h, tmdns.c: 3rd set of patches from Steve :
+	  signed/unsigned and const changes.
+
+2004-01-30 23:23  andi
+
+	* Makefile.in, configure, configure.in, server/debug.c: 2nd set of
+	  patches from Steve Grubb: use strerror when available instead of
+	  fiddling with sys_errlist.
+
+2004-01-30 02:57  andi
+
+	* server/info.c: Removed some noop code in info_search().
+
+2004-01-30 02:54  andi
+
+	* server/getifaddrs.c: Removed an attemp to free stack variable.
+	  Close socket in case of an initial ioctl fails.
+
+2004-01-30 02:38  andi
+
+	* server/: Makefile.am, Makefile.in, conf.c, conf.h, debug.c,
+	  dns.c, dns.h, getifaddrs.c, ifaddrs.h, info.c, info.h, llist.c,
+	  llist.h, serv_udp.c, serv_udp.h, tmdns.c, tmdns.h: First batch of
+	  patches from Steve Grubb, mostly code cleanup. Also cleaned out
+	  some unused variables shown up by using '-Wall' (me). Use
+	  '-Wall'.
+
+2004-01-27 20:38  andi
+
+	* server/ifaddrs.h: Follow up to getiffaddrs fix
+
+2004-01-27 20:27  andi
+
+	* Makefile.in, aclocal.m4, configure, configure.in,
+	  init.d/Makefile.in, scripts/Makefile.in, server/Makefile.in,
+	  server/config.h.in: Fixed check for getifaddrs in configure.in
+	  (typo), also re-generated auto(make|conf) stuff with more recent
+	  tools.
+
+2003-01-15 07:20  andi
+
+	* ChangeLog: Update ChangLog.
+
+2003-01-15 07:18  andi
+
+	* Makefile.am, Makefile.in, configure, configure.in,
+	  init.d/Makefile.in, init.d/initscript, scripts/Makefile.am,
+	  scripts/Makefile.in, scripts/register-service.in,
+	  server/Makefile.in, server/conf.c, server/conf.h,
+	  server/config.h.in, server/dns.c, server/dns.h, server/info.c,
+	  server/svc, server/tmdns.c: Added support for SRV records. Added
+	  script to modify dynamic service registry. Fixed small bug with
+	  enabling dns_bridge that was intodruced in my last check-in.
+
+2003-01-13 23:51  andi
+
+	* Makefile.in, configure, configure.in, init.d/initscript,
+	  server/conf.c, server/conf.h, server/info.c, server/tmdns.c: Use
+	  /etc & /var if prefix is /usr OR /usr/local in configure.in .
+	  Allow to set the hostname via config file and strip away
+	  everything after the first dot in the resulting hostname. Debug
+	  file default needs to be printed when DEBUG is on not when it is
+	  off.
+
+2003-01-11 13:32  andi
+
+	* COPYING, INSTALL, Makefile.am, Makefile.in, autogen.sh,
+	  configure.in, ChangeLog, aclocal.m4, depcomp, install-sh,
+	  missing, mkinstalldirs, AUTHORS, NEWS, README, TODO, configure,
+	  stamp-h1, server/serv_udp.c, server/serv_udp.h,
+	  server/Makefile.am, server/Makefile.in, server/conf.c,
+	  server/conf.h, server/debug.c, server/debug.h, server/dns.c,
+	  server/dns.h, server/tmdns.c, server/tmdns.h, server/config.h.in,
+	  server/getifaddrs.c, server/ifaddrs.h, server/info.c,
+	  server/info.h, server/llist.c, server/llist.h, server/svc,
+	  docs/draft-cheshire-dnsext-multicastdns.txt, init.d/Makefile.am,
+	  init.d/Makefile.in, init.d/init.DEBIAN, init.d/initscript:
+	  Initial revision
+
+2003-01-11 13:32  andi
+
+	* COPYING, INSTALL, Makefile.am, Makefile.in, autogen.sh,
+	  configure.in, ChangeLog, aclocal.m4, depcomp, install-sh,
+	  missing, mkinstalldirs, AUTHORS, NEWS, README, TODO, configure,
+	  stamp-h1, server/serv_udp.c, server/serv_udp.h,
+	  server/Makefile.am, server/Makefile.in, server/conf.c,
+	  server/conf.h, server/debug.c, server/debug.h, server/dns.c,
+	  server/dns.h, server/tmdns.c, server/tmdns.h, server/config.h.in,
+	  server/getifaddrs.c, server/ifaddrs.h, server/info.c,
+	  server/info.h, server/llist.c, server/llist.h, server/svc,
+	  docs/draft-cheshire-dnsext-multicastdns.txt, init.d/Makefile.am,
+	  init.d/Makefile.in, init.d/init.DEBIAN, init.d/initscript:
+	  initial checkin
+

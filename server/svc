@@ -1,0 +1,85 @@
+# 
+# NAME
+#      tmdns.services - Service configuration file for tmdns
+#
+# SYNOPSIS
+#      The  tmdns.services file is used to specify which services
+#      tmdns, should announce via mDNS.
+#
+#      Multicast DNS clients may use  service  (SRV)  records  to
+#      locate  services,  such as printers, within the local sub-
+#      net.
+#
+# FILE FORMAT
+#      Lines starting  with  a  "#"  are  comments  and  will  be
+#      ignored.   Any  number  of white spaces are taken as field
+#      separators  and  ignored  otherwise, with the exception of 
+#      the last field, where whitspace is preserved.
+#
+#      Each  non-empty  line defines a service entry to be adver-
+#      tised by mDNS and should be made  up  from  the  following
+#      fields:
+#
+#      proto  The  IP  protocol to advertise, either tcp, udp or
+#             text.
+#
+#             A value of text signifies a text record that should
+#             be associated with the previous service record. The
+#             remainder of the line is regarded as a string to be
+#             put  into  the text record.  Consecutive text lines
+#             are gathered into a single TXT record.
+#
+#      For any other protocol than text the remainder of the line
+#      is interpreted as a the following fields
+#
+#      port   The tcp or udp port number to advertise.
+#
+#      priority
+#             A  priority  for  this entry. Clients should select
+#             the service with the lowest priority value  on  the
+#             network.
+#
+#      weight Clients  should prefer the highest weighted service
+#             record they get.
+#
+#      name   A name given to this service.  This  field  may  be
+#             left empty, in which case the service is advertised
+#             as <host>._<service>._<proto>.local, otherwise the
+#             service   will   be   advertised  as 
+#             <name>._<service>._proto.local.  In  both  cases  a 
+#             pointer  record  is  advertised   under   the  name
+#             _<service>._<proto>.local  to allow clients to find
+#             all  services  of  a specific type within the local
+#             network.
+#
+#      All strings in text lines and  the  content  of  the  name
+#      field  must  be  encoded  as UTF8 when you wish to include
+#      non-ascii characters. Dots,  spaces  and  backslashes  are
+#      escaped  as needed. The name may not exceed 63 characters,
+#      escaped characters count as two chars.
+#
+#      You may use the iconv utility to en- and decode  the  name
+#      fields to and from your local charset.
+#
+# EXAMPLES
+#
+# proto	port	service	prio	weight	name
+#
+#udp	53	dns	0	0
+#tcp	53	dns	0	0
+#
+#tcp	80	http	0	0	
+#text	path=/
+#
+#tcp	80	http	0	0	Distributions
+#text	path=/dists/
+#
+#tcp	443	https	0	0	My Secure Webserver
+#text	path=/
+#
+#tcp	22	ssh	0	0	
+#tcp	21	ftp	0	0
+#tcp	139	smb	0	0
+#tcp	139	cifs	0	0
+#
+

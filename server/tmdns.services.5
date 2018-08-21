@@ -1,0 +1,116 @@
+.\" $Id: tmdns.services.5,v 1.5 2004/02/18 22:07:06 andi Exp $
+.TH TMDNS.SERVICES 5 "$Date: 2004/02/18 22:07:06 $" "" ""
+.SH NAME
+tmdns.conf \- Service configuration file for tmdns
+.SH SYNOPSIS
+The 
+.I tmdns.services
+file is used to specify which services
+.I tmdns,
+should announce via mDNS. 
+.PP
+Multicast DNS clients may use service
+.I (SRV)
+records to locate services, such as printers, 
+within the local subnet. 
+.SH FILE FORMAT
+Lines starting with a "#" are comments and will be ignored. 
+Any number of white spaces are taken as field separators and 
+ignored otherwise, with the exception of the last field,
+where whitspace is preserved.
+.PP
+Each non-empty line defines a service entry to be advertised by 
+mDNS and should be made up from the following fields:
+.TP
+.B proto
+The IP protocol to advertise, either 
+.I tcp
+,
+.I udp
+,
+.I text
+or
+.I ptr
+.IP
+A value of \fItext\fR signifies a text record that should be associated 
+with the previous service record. The remainder of the  
+line is regarded as a string to be put into the text record. 
+Consecutive text lines are gathered into a single TXT record.
+.IP
+A value of \fIptr\fR signifies an additional pointer (PTR) record
+that should be associated with the previous service record. The remainder 
+of the line is regarded as the domain name to be used for the ptr record,
+the target is the domain name of the previous service record.
+.PP
+For any other protocol than
+.I text
+or
+.I ptr
+the remainder of the line is interpreted as a the following fields
+.TP
+.B port
+The tcp or udp port number to advertise.
+.TP
+.B priority
+A priority for this entry. Clients should select the service
+with the lowest priority value on the network.
+.TP
+.B weight
+Clients should prefer the highest weighted service record they get.
+.TP
+.B name
+A name given to this service. This field may be left empty,
+in which case the service is advertised as 
+.I <host>._<service>._<proto>.local
+, otherwise the service will be advertised as
+.I <name>._<service>._<proto>.local
+In both cases a pointer record is advertised under the name
+.I _<sevice>._<proto>.local.
+to allow clients to find all services of a specific type
+within the local network.
+.PP
+All strings in 
+.I text
+lines and the content of the name field must be encoded as UTF8 when
+you wish to include non-ascii characters. Dots, spaces and backslashes
+are escaped as needed. The name may not exceed 63 characters, escaped
+characters count as two chars.
+.PP
+You may use the
+.I iconv
+utility to en- and decode the name fields to and from your local charset.
+.SH EXAMPLES
+.TP
+Advertise a DNS server
+.nf
+
+udp    53      dns     0       0
+tcp    53      dns     0       0
+
+.fi
+.TP
+Advertise an HTTP server under the name "foo server"
+.nf
+
+tcp    80      http    0       0   foo server
+
+.fi
+.TP
+Find all hosts running a ssh
+.nf
+
+andi@two:~> host -t any _ssh._tcp.local.
+
+_ssh._tcp.local         PTR     G4Notebook._ssh._tcp.local
+_ssh._tcp.local         PTR     two.local._ssh._tcp.local
+
+.fi
+.PP
+This requires that you have configured 
+.I tmdns
+in dns bridge mode.
+.SH SEE ALSO
+tmdns(8)
+tmdns.conf(5)
+register-service(8)
+/etc/services

@@ -1,0 +1,33 @@
+
+o implement SRV records + some tools to update published services.
+  (done for static/semi-static case via files. Could be done better)
+  Idea:
+    Implement DNS update behaviour as close as possible. 
+    + clients using this method automatically can update unicast DNS
+      servers.
+    + No new protocol needed. DNS record parsing is implemented anyway,
+      just need the logic to do this.
+    - people begining to adapt the mdnsd interface.
+
+o Better Browsing support
+  Idea:
+    a) Implement TCP support (strictly speaking, needed anyway)
+    b) Client sends dns query via tcp.
+    c) first answer packet is handled as usual, i.e. gather responses,
+       send one response after gather_delay seconds.
+    d) send more answers as long as the tcp connection is alive.
+
+o use multiple packets when probing/announcing, not just one jumbo packet.
+  (implemented but needs more work and testing)
+
+o check compatibility with other implementations, notably Rendevouz.
+  (Got a Mac now, so I got something to test against.
+   Probing won't nuke your Mac from the namespace anymore. Does not 
+   implement tie break however and does not fall-back into probing mode.)
+
+o add packaging stuff. Help !
+  (Got a spec file from Steve Grubb. Deb ? Gentoo ? )
+
+o man page
+  (needs proof-reading to fix my bad english)
+

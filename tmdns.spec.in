@@ -1,0 +1,100 @@
+%define _initrddir /etc/rc.d/init.d
+
+Name:		tmdns
+Summary:	Tiny Multicast DNS Responder
+Version:	@VERSION@
+Release:	1
+License:	GPL
+Group:		System/Servers
+Vendor:		Andreas Hofmeister
+URL:		http://zeroconf.sourceforge.net/
+Packager:	Steve Grubb <linux_4ever@yahoo.com>
+Source:		%{name}-%{version}.tar.gz
+BuildRoot:	%{_tmppath}/%{name}-%{version}-root
+BuildRequires:	glibc-devel, gcc, perl
+Requires:	chkconfig, shadow-utils, initscripts
+Prefix:          %{_prefix}
+
+%description
+This program supports the IETF zeroconf protocols, and other techniques
+used to configure IP networks without needing either a sysadmin or any 
+kind of master server. The OS support is for UNIX, with a focus on GNU/Linux
+and BSD type systems.
+
+%prep
+%setup -q 
+
+%build
+   TM=`date +%C%y%m%d%H%M`
+   find . -name '*' -exec touch -t $TM {} \;
+   ./configure					
+   make
+
+%install
+rm -rf ${RPM_BUILD_ROOT}
+%makeinstall
+mkdir -p %buildroot%{_initrddir}
+
+# Manually install config files
+./server/tmdns -P | sed 's/username = daemon/username = tmdns/' > tmdns.conf
+mv server/svc tmdns.services
+install -m644 {tmdns.conf,tmdns.services} %buildroot%{_sysconfdir}
+
+# Manually install init script
+install -m755 init.d/initscript %buildroot%{_initrddir}/tmdns
+
+# manually install docs
+mkdir -p %buildroot%{_docdir}/%{name}-%{version}
+install -m644 {ChangeLog,INSTALL,TODO,README} %buildroot%{_docdir}/%{name}-%{version}
+install -m644 docs/draft-cheshire-dnsext-multicastdns.txt %buildroot%{_docdir}/%{name}-%{version}
+
+%clean
+rm -rf ${RPM_BUILD_ROOT}
+
+%pre
+# Add a tmdns group
+g=`cat /etc/group | grep ^tmdns:`
+if test ".${g}" = "."; then
+    /usr/sbin/groupadd -r tmdns 2>/dev/null || :
+fi
+
+# Add a tmdns user
+u=`cat /etc/passwd | grep ^tmdns:`
+if test ".${u}" = "."; then
+    /usr/sbin/useradd -s /bin/false -c "tmdns server user" -g tmdns \
+                      -d %{_datadir}/tmdns -M -r tmdns 2>/dev/null || :
+fi
+
+%post
+if [ "$1" = "1" ]; then
+   /sbin/chkconfig --add tmdns
+fi
+
+%preun
+if [ "$1" = "0" ]; then
+   /usr/sbin/userdel tmdns 2> /dev/null || :
+   /usr/sbin/groupdel tmdns 2> /dev/null || :
+   /sbin/service tmdns stop > /dev/null 2>&1
+   /sbin/chkconfig --del tmdns
+fi
+
+%postun
+if [ "$1" -ge "1" ]; then
+   /sbin/service tmdns condrestart > /dev/null 2>&1
+fi
+
+%files
+%defattr(-,root,root)
+%doc %{_docdir}/%{name}-%{version}/*
+%attr(0755,root,root) %{_sbindir}/tmdns
+%attr(0755,root,root) %{_sbindir}/update-resolvrdv
+%attr(0755,root,root) %{_sbindir}/register-service
+%attr(755,root,root) %{_initrddir}/%{name}
+%attr(0644,root,root) %config(noreplace) %{_sysconfdir}/tmdns.conf
+%attr(0644,root,root) %config(noreplace) %{_sysconfdir}/tmdns.services
+%{_mandir}/man5/*
+%{_mandir}/man8/*
+
+%changelog
+* Sat Feb 07 2004 Steve Grubb <linux_4ever@yahoo.com> 0.2
+- Created base spec file
