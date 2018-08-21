@@ -166,7 +166,7 @@ AC_CHECK_FUNCS(select socket strdup strerror inet_ntop inet_pton getifaddrs free
 CHECK_DIST
 
 dnl AC_OUTPUT([Makefile server/Makefile doc/Makefile])
-AC_OUTPUT([Makefile server/Makefile init.d/Makefile scripts/Makefile tmdns.spec])
+AC_OUTPUT([Makefile server/Makefile init.d/Makefile tmdns.spec])
 
 echo    "============== Summary =============="
 echo
